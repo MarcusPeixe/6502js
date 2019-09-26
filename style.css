@@ -1,16 +1,32 @@
+.flexbox {
+  display: flex;
+  flex-direction: column;
+}
+
 .widget {
-  width: 600px;
-  margin: 30px auto;
-  font-size: 12px;
+  width: 85vw;
+  margin: 4px auto;
+  font-size: 14px;
   line-height: 1.5;
+  /*display: flex;*/
+  /*flex-direction: column;*/
+}
+
+.widget2 {
+  width: 85vw;
+  margin: 4px auto;
+  font-size: 14px;
+  line-height: 1.5;
+  /*display: flex;*/
+  /*flex-direction: column;*/
 }
 
 .buttons {
-  margin: 8px 0;
+  margin: 12px 0;
 }
 
-.start, .length {
-  width: 50px;
+.start, .length .delay .persec{
+  width: 5vw;
 }
 
 .widget pre {
@@ -23,9 +39,9 @@
 .code {
   margin: 0 0 6px 0;
   padding: 6px;
-  border: 1px solid black;
-  width: 420px;
-  height: 290px;
+  /*border: 2px solid black;*/
+  width: 40vw;
+  height: 50vh;
   font-family: monospace;
   overflow: auto;
   float: left;
@@ -33,17 +49,22 @@
 
 .screen {
   float: right;
+  border: 2px solid red;
+/*  width: 20vw;
+  height: 20vw;*/
 }
 
 .debugger {
-  border: 1px black solid;
-  margin-top: 6px;
+  border: 2px solid #bbb;
+  background-color: #ddd;
+  /*margin-top: 6px;*/
   padding: 3px;
   padding-top: 8px;
-  height: 125px;
-  width: 152px;
+  /*height: 10vw;*/
+  width: 10vw;
   text-align: center;
   float: right;
+  font-size: 14px;
 }
 
 .minidebugger {
@@ -51,11 +72,11 @@
   margin-top: 6px;
   padding: 0;
   font-family: monospace;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .monitorControls {
-  width: 587px;
+  width: 80vw;
   clear: both;
   margin-bottom: 10px;
   padding: 0;
@@ -66,25 +87,36 @@
 }
 
 .monitor {
-  margin: 10px 0;
+  /*margin: 10px 0;*/
   padding: 6px;
-  border: 1px solid #999;
-  background-color: #ddd;
-  width: 587px;
-  height: 100px;
+  /*border: 4px solid #666;*/
+  color: #1f1;
+  font-style: bold;
+  font-size: 14px;
+  background-color: #222;
+  width: 40vw;
+  height: 20vh;
   overflow: auto;
-  display: none;
+  float: left;
+  /*display: none;*/
 }
 
 .messages {
   margin: 0;
   padding: 6px;
-  border: 1px solid #999;
-  background-color: #eee;
+  border: 2px solid #bbb;
+  background-color: #ddd;
+  /*overflow-x: hidden;*/
   overflow: auto;
-  width: 587px;
-  height: 100px;
+  /*word-wrap: normal;*/
+  width: 40vw;
+  height: 20vh;
   text-align: left;
-  font-size: 12px;
-  color: #444;
+  font-size: 14px;
+  color: black;
+  float: right;
 }
+
+/*.textarea {
+  resize: none;
+}*/

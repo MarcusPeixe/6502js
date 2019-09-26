@@ -5,44 +5,52 @@
     <title>6502 assembler/simulator</title>
   </head>
   <body>
-
-    <div class="widget">
-      <div class="buttons">
-        <input type="button" value="Assemble" class="assembleButton" />
-        <input type="button" value="Run" class="runButton" />
-        <input type="button" value="Reset" class="resetButton" />
-        <input type="button" value="Hexdump" class="hexdumpButton" />
-        <input type="button" value="Disassemble" class="disassembleButton" />
-        <input type="button" value="Notes" class="notesButton" />
-      </div>
-
-      <textarea class="code"></textarea>
-
-      <canvas class="screen" width="160" height="160"></canvas>
-
-      <div class="debugger">
-        <input type="checkbox" class="debug" name="debug" />
-        <label for="debug">Debugger</label>
-        <div class="minidebugger"></div>
+    <div class="flexbox">
+      <div class="widget">
         <div class="buttons">
-          <input type="button" value="Step" class="stepButton" />
-          <input type="button" value="Jump to ..." class="gotoButton" />
+          <input type="button" value="Assemble" class="assembleButton" />
+          <input type="button" value="Run" class="runButton" />
+          <input type="button" value="Reset" class="resetButton" />
+          <input type="button" value="Hexdump" class="hexdumpButton" />
+          <input type="button" value="Disassemble" class="disassembleButton" />
+          <input type="button" value="Notes" class="notesButton" />
         </div>
+
+        <!-- <textarea class="code"></textarea> -->
+        <div class="code" id="editor"></div>
+
+        <canvas class="screen" width="384" height="384"></canvas>
+        <!-- <canvas class="screen"></canvas> -->
+
+        <div class="debugger">
+          <input type="checkbox" class="debug" name="debug" />
+          <label for="debug">Debugger</label>
+          <div class="minidebugger"></div>
+          <div class="buttons">
+            <input type="button" value="Step" class="stepButton" />
+            <input type="button" value="Jump to ..." class="gotoButton" />
+          </div>
+        </div>
+
       </div>
+      <div class="widget2">
+        <div class="monitorControls">
+          <label for="monitoring">Monitor</label>
+          <input type="checkbox" class="monitoring" name="monitoring" />
 
-      <div class="monitorControls">
-        <label for="monitoring">Monitor</label>
-        <input type="checkbox" class="monitoring" name="monitoring" />
+          <label for="start">Start: $</label>
+          <input type="text" value="0" class="start" name="start" />
+          <label for="length">Length: $</label>
+          <input type="text" value="100" class="length" name="length" />
+          <label for="delay">Delay: </label>
+          <input type="text" value="15" class="delay" name="delay" />
+          <label for="persec">Per Sec: </label>
+          <input type="text" value="97" class="persec" name="persec" />
+        </div>
+        <div class="monitor"><pre><code></code></pre></div>
+        <div class="messages"><pre><code></code></pre></div>
 
-        <label for="start">Start: $</label>
-        <input type="text" value="0" class="start" name="start" />
-        <label for="length">Length: $</label>
-        <input type="text" value="ff" class="length" name="length" />
-      </div>
-      <div class="monitor"><pre><code></code></pre></div>
-      <div class="messages"><pre><code></code></pre></div>
-
-      <div class="notes" style="display: none">Notes:
+        <div class="notes" style="display: none">Notes:
 
 Memory location $fe contains a new random byte on every instruction.
 Memory location $ff contains the ascii code of the last key pressed.
@@ -51,25 +59,43 @@ Memory locations $200 to $5ff map to the screen pixels. Different values will
 draw different colour pixels. The colours are:
 
 $0: Black
-$1: White
-$2: Red
-$3: Cyan
-$4: Purple
-$5: Green
-$6: Blue
-$7: Yellow
-$8: Orange
-$9: Brown
-$a: Light red
-$b: Dark grey
-$c: Grey
-$d: Light green
-$e: Light blue
-$f: Light grey
-    </div>
+$1: Red
+$2: Green
+$3: Yellow
+$4: Blue
+$5: Purple
+$6: Dark Cyan
+$7: Grey
 
-    <script src="es5-shim.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-    <script src="assembler.js"></script>
+$00 - $07: Regular colours
+$08 - $0f: Saturated colours
+$10 - $17: Brighter colours
+$18 - $1f: Brighter and saturated colours
+
+$20 - $80: ASCII characters
+
+$81 - $bf: 6-bit colour depth 64 colours
+$c0 - $ff: greyscale
+
+Use keyword "define" to assign names to values.
+Use keyword "dcb" to define constant literal bytes.
+
+Hex notation is $xx and binary notation is bxxxxxxxx.
+
+        </div>
+      </div>
+      <script src="es5-shim.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+      <script src="assembler.js"></script>
+      <script src="ace-builds-master/src-noconflict/ace.js" type="text/javascript" charset="utf-8">
+      </script>
+      <script>
+          var editor = ace.edit("editor");
+          editor.setTheme("ace/theme/monokai");
+          editor.session.setMode("ace/mode/assembly_6502");
+          editor.session.setTabSize(2);
+          editor.session.setUseSoftTabs(false);
+      </script>
+    </div>
   </body>
 </html>
