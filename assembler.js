@@ -32,6 +32,8 @@ function SimulatorWidget(node) {
     $node.find('.runButton').click(simulator.runBinary);
     $node.find('.runButton').click(simulator.stopDebugger);
     $node.find('.resetButton').click(simulator.reset);
+    $node.find('.clearButton').click(simulator.clearMem);
+    $node.find('.nmiButton').click(simulator.triggerNMI);
     $node.find('.hexdumpButton').click(assembler.hexdump);
     $node.find('.disassembleButton').click(assembler.disassemble);
     $node.find('.debug').change(function () {
@@ -85,14 +87,18 @@ function SimulatorWidget(node) {
       assemble: true,
       run: [false, 'Run'],
       reset: false,
+      clear: true,
+      interrupt: false,
       hexdump: false,
       disassemble: false,
       debug: [false, false]
     };
     var assembled = {
-      assemble: false,
+      assemble: true,
       run: [true, 'Run'],
       reset: true,
+      clear: true,
+      interrupt: false,
       hexdump: true,
       disassemble: true,
       debug: [true, false]
@@ -101,6 +107,8 @@ function SimulatorWidget(node) {
       assemble: false,
       run: [true, 'Stop'],
       reset: true,
+      clear: false,
+      interrupt: true,
       hexdump: false,
       disassemble: false,
       debug: [true, false]
@@ -108,6 +116,8 @@ function SimulatorWidget(node) {
     var debugging = {
       assemble: false,
       reset: true,
+      clear: false,
+      interrupt: true,
       hexdump: true,
       disassemble: true,
       debug: [true, true]
@@ -115,6 +125,8 @@ function SimulatorWidget(node) {
     var postDebugging = {
       assemble: false,
       reset: true,
+      clear: false,
+      interrupt: true,
       hexdump: true,
       disassemble: true,
       debug: [true, false]
@@ -128,6 +140,8 @@ function SimulatorWidget(node) {
         $node.find('.runButton').val(state.run[1]);
       }
       $node.find('.resetButton').attr('disabled', !state.reset);
+      $node.find('.clearButton').attr('disabled', !state.clear);
+      $node.find('.nmiButton').attr('disabled', !state.interrupt);
       $node.find('.hexdumpButton').attr('disabled', !state.hexdump);
       $node.find('.disassembleButton').attr('disabled', !state.disassemble);
       $node.find('.debug').attr('disabled', !state.debug[0]);
@@ -311,6 +325,8 @@ function SimulatorWidget(node) {
     function storeKeypress(e) {
       var value = e.which;
       memory.storeByte(0xff, value);
+      simulator.triggerIRQ();
+      //IRQ
     }
 
     function format(start, length) {
@@ -352,6 +368,28 @@ function SimulatorWidget(node) {
     var debug = false;
     var monitoring = false;
     var executeId;
+
+    // IRQ
+    function triggerIRQ() {
+      if ((regP & 0b00000100) !== 0) 
+        return;
+      var addr = memory.getWord(0xfffe);
+      stackPush(((regPC >> 8) & 0xff));
+      stackPush((regPC & 0xff));
+      stackPush(regP & 0b11101111 | 0b00100100);
+      regP = regP | 0b00100100;
+      regPC = addr;
+    }
+
+    // NMI
+    function triggerNMI() {
+      var addr = memory.getWord(0xfffa);
+      stackPush(((regPC >> 8) & 0xff));
+      stackPush((regPC & 0xff));
+      stackPush(regP & 0b11101111 | 0b00100100);
+      regP = regP | 0b00100100;
+      regPC = addr;
+    }
 
     // Set zero and negative processor flags based on result
     function setNVflags(value) {
@@ -566,9 +604,34 @@ function SimulatorWidget(node) {
 
     var instructions = {
       i00: function () {
-        codeRunning = false;
+        // codeRunning = false;
+        if ((regP & 0b00000100) !== 0) 
+          return;
+        var addr = memory.getWord(0xfffe);
+        stackPush(((regPC >> 8) & 0xff));
+        stackPush((regPC & 0xff));
+        stackPush(regP | 0b00110100);
+        regP = regP | 0b00100100;
+        regPC = addr;
         //BRK
       },
+      // i20: function () {
+      //   var addr = popWord();
+      //   var currAddr = regPC - 1;
+      //   stackPush(((currAddr >> 8) & 0xff));
+      //   stackPush((currAddr & 0xff));
+      //   regPC = addr;
+      //   //JSR
+      // },
+      // i40: function () {
+      //   regP = stackPop() | 0x30; // There is no B bit!
+      //   regPC = stackPop() | (stackPop() << 8);
+      //   //RTI
+      // },
+      // i60: function () {
+      //   regPC = (stackPop() | (stackPop() << 8)) + 1;
+      //   //RTS
+      // },
 
       i01: function () {
         var zp = (popByte() + regX) & 0xff;
@@ -816,7 +879,7 @@ function SimulatorWidget(node) {
       },
 
       i40: function () {
-        regP = stackPop() | 0x30; // There is no B bit!
+        regP = (stackPop() & 0b11111011) | 0b00110000; // There is no B bit!
         regPC = stackPop() | (stackPop() << 8);
         //RTI
       },
@@ -911,7 +974,7 @@ function SimulatorWidget(node) {
 
       i58: function () {
         regP &= ~0x04;
-        throw new Error("Interrupts not implemented");
+        // throw new Error("Interrupts not implemented");
         //CLI
       },
 
@@ -1046,7 +1109,7 @@ function SimulatorWidget(node) {
 
       i78: function () {
         regP |= 0x04;
-        throw new Error("Interrupts not implemented");
+        // throw new Error("Interrupts not implemented");
         //SEI
       },
 
@@ -1738,14 +1801,28 @@ function SimulatorWidget(node) {
 
     // reset() - Reset CPU and memory.
     function reset() {
-      display.reset();
-      for (var i = 0; i < 0x600; i++) { // clear ZP, stack and screen
-        memory.set(i, 0x00);
-      }
+      // display.reset();
+      // for (var i = 0; i < 0x600; i++) { // clear ZP, stack and screen
+      //   memory.set(i, 0x00);
+      // }
       regA = regX = regY = 0;
-      regPC = 0x600;
+      regPC = memory.getWord(0xfffc);
       regSP = 0xff;
       regP = 0x30;
+      message("Reset to address " + addr2hex(regPC));
+      updateDebugInfo();
+    }
+
+    function clearMem() {
+      display.reset();
+      regA = regX = regY = 0;
+      regPC = memory.getWord(0xfffc);
+      regSP = 0xff;
+      regP = 0x30;
+      for (var i = 0; i < 0x10000; i++) { // clear all memory
+        memory.set(i, 0x00);
+      }
+      message("Reset to address " + addr2hex(regPC));
       updateDebugInfo();
     }
 
@@ -1760,12 +1837,15 @@ function SimulatorWidget(node) {
     }
 
     return {
+      triggerIRQ: triggerIRQ,
+      triggerNMI: triggerNMI,
       runBinary: runBinary,
       enableDebugger: enableDebugger,
       stopDebugger: stopDebugger,
       debugExec: debugExec,
       gotoAddr: gotoAddr,
       reset: reset,
+      clearMem: clearMem,
       stop: stop,
       toggleMonitor: toggleMonitor,
       handleMonitorRangeChange: handleMonitorRangeChange
@@ -1990,6 +2070,38 @@ function SimulatorWidget(node) {
       if (codeAssembledOK) {
         ui.assembleSuccess();
         memory.set(defaultCodePC, 0x00); //set a null byte at the end of the code
+
+        if (labels.find("nmi")) {
+        	var index = labels.getPC("nmi")
+        	message("'nmi' label at " + addr2hex(index));
+        	memory.set(0xfffa, index & 0xff);
+        	memory.set(0xfffb, (index >> 8) & 0xff);
+        }
+        else
+        	message("nmi not found");
+        
+        if (labels.find("res")) {
+        	var index = labels.getPC("res")
+        	message("'res' label at " + addr2hex(index));
+        	memory.set(0xfffc, index & 0xff);
+        	memory.set(0xfffd, (index >> 8) & 0xff);
+        }
+        else {
+        	// Default starting position (BOOTSTRAP)
+        	memory.set(0xfffc, 0x00);
+        	memory.set(0xfffd, 0x06);
+        	message("res not found");
+        }
+
+        if (labels.find("irq")) {
+        	var index = labels.getPC("irq")
+        	message("'irq' label at " + addr2hex(index));
+        	memory.set(0xfffe, index & 0xff);
+        	memory.set(0xffff, (index >> 8) & 0xff);
+        }
+        else
+        	message("irq not found");
+
       } else {
         try {
           var str = lines[i].replace("<", "&lt;").replace(">", "&gt;");
@@ -2006,7 +2118,7 @@ function SimulatorWidget(node) {
         ui.initialize();
         return false;
       }
-
+      simulator.reset();
       message("Code assembled successfully, " + codeLen + " bytes.");
       return true;
     }
@@ -2358,7 +2470,7 @@ function SimulatorWidget(node) {
     function checkSingle(param, opcode) {
       if (opcode === null) { return false; }
       // Accumulator instructions are counted as single-byte opcodes
-      if (param !== "" && param !== "A") { return false; }
+      if (param !== "" && param !== "A" && param !== "a") { return false; }
       pushByte(opcode);
       return true;
     }
@@ -2728,6 +2840,15 @@ function SimulatorWidget(node) {
     var hi = ((nr & 0xf0) >> 4);
     var lo = (nr & 15);
     return str.substring(hi, hi + 1) + str.substring(lo, lo + 1);
+  }
+
+  function num2bin(nr) {
+    var str = "";
+    while (nr) {
+    	str += nr & 1? "1": "0";
+    	nr >>= 1;  
+    }
+    return str;
   }
 
   // Prints text in the message window
