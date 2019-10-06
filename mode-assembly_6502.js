@@ -39,6 +39,7 @@ var Assembly6502HighlightRules = function() {
 	            // Return to start
 	            {token : "newline",  regex : "^", next : "start"},
 	            {token : "comment",  regex : ";.*?$", next : "start"},
+	            {token : "variable.parameter",  regex : "A", next : "start"},
 	            
 	            // Get a value
 	            {token : "keyword.operator",  regex : "[(]", next : "value"},
@@ -81,7 +82,7 @@ var Assembly6502HighlightRules = function() {
 	        ],
 	        "comma2" : [
 	            {token : "keyword.operator",  regex : "[,]", next : "reg2"},
-	            {token : "keyword.operator",  regex : "[)]", next : "start"},
+	            {token : "keyword.operator",  regex : "[)]", next : "comma"},
 	        ],
 	        "comma3" : [
 	            {token : "keyword.operator",  regex : "[,]", next : "constbyte"},
