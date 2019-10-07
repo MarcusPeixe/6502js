@@ -51,6 +51,7 @@ var Assembly6502HighlightRules = function() {
 	           	{token : "constant.numeric", regex: "#?[b][01]{8}\\b", next : "comma"},
 	            {token : "constant.numeric", regex: "#?[b][01]{16}\\b", next : "comma"},
 	            {token : "constant.numeric", regex: "#?[0-9]{1,5}\\b", next : "comma"},
+	            {token : "variable", regex: "#[a-z_]+[a-z0-9_]*?(?=_HI|_LO)", next : "hilo"},
 	            {token : "variable", regex: "#?[a-z_]+[a-z0-9_]*?\\b", next : "comma"},
 	            {caseInsensitive: true}
 	        ],
@@ -62,7 +63,18 @@ var Assembly6502HighlightRules = function() {
 	           	{token : "constant.numeric", regex: "#?[b][01]{8}\\b", next : "comma2"},
 	            {token : "constant.numeric", regex: "#?[b][01]{16}\\b", next : "comma2"},
 	            {token : "constant.numeric", regex: "#?[0-9]{1,5}\\b", next : "comma2"},
+	            {token : "variable", regex: "#[a-z_]+[a-z0-9_]*?(?=_HI|_LO)", next : "hilo2"},
 	            {token : "variable", regex: "#?[a-z_]+[a-z0-9_]*?\\b", next : "comma2"},
+	            {caseInsensitive: true}
+	        ],
+	        "hilo" : [
+	            // Get HI/LO suffix
+	            {token : "variable.parameter", regex: "(_HI|_LO)", next : "comma"},
+	            {caseInsensitive: true}
+	        ],
+	        "hilo2" : [
+	            // Get HI/LO suffix
+	            {token : "variable.parameter", regex: "(_HI|_LO)", next : "comma2"},
 	            {caseInsensitive: true}
 	        ],
 	        "reg" : [

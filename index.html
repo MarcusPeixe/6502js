@@ -10,7 +10,7 @@
         <div class="buttons">
           <input type="button" value="Assemble" class="assembleButton" />
           <input type="button" value="Run" class="runButton" />
-          <input type="button" value="Clear memory" class="clearButton" />
+          <!-- <input type="button" value="Clear memory" class="clearButton" /> -->
           <input type="button" value="RESET interrupt" class="resetButton" />
           <input type="button" value="NMI interrupt" class="nmiButton" />
           <input type="button" value="Hexdump" class="hexdumpButton" />
@@ -56,10 +56,10 @@
 
 Memory location $fe contains a new random byte on every instruction.
 
-Memory location $ff contains the ascii code of the last key pressed.
+Every time a key is pressed, its ASCII code is stored in $ff, and a IRQ is triggered.
 
 Memory locations $200 to $5ff map to the screen pixels. Different values will
-draw different colour pixels. The colours are:
+draw different colour/character pixels. The pixels are:
 
 $0: Black
 $1: Red
@@ -71,18 +71,16 @@ $6: Cyan
 $7: White
 
 $00 - $07: Dark colours
-
 $08 - $0f: Saturated colours
-
 $10 - $17: Bright colours
-
 $18 - $1f: Bright and saturated colours
 
 $20 - $7f: ASCII table
 
 $80 - $bf: Colours (3 bit depth)
-
 $c0 - $ff: Greyscale 
+
+
         </div>
       </div>
       <script src="es5-shim.js"></script>
@@ -90,12 +88,19 @@ $c0 - $ff: Greyscale
       <script src="assembler.js"></script>
       <script src="ace-builds-master/src-noconflict/ace.js" type="text/javascript" charset="utf-8">
       </script>
+      <script src="ace-builds-master/src-noconflict/ext-language_tools.js"></script>
       <script>
+          ace.require("ace/ext/language_tools");
           var editor = ace.edit("editor");
           editor.setTheme("ace/theme/monokai");
           editor.session.setMode("ace/mode/assembly_6502");
           editor.session.setTabSize(2);
           editor.session.setUseSoftTabs(false);
+          editor.setOptions({
+            enableBasicAutocompletion: true,
+            // enableSnippets: true,
+            enableLiveAutocompletion: true
+          });
       </script>
     </div>
   </body>

@@ -26,13 +26,12 @@ function SimulatorWidget(node) {
     display.initialize();
     simulator.reset();
 
-    $node.find('.assembleButton').click(function () {
-      assembler.assembleCode();
-    });
+    // $node.find('.assembleButton').click(assembler.assembleCode;
+    $node.find('.assembleButton').click(simulator.clearMem);
     $node.find('.runButton').click(simulator.runBinary);
     $node.find('.runButton').click(simulator.stopDebugger);
     $node.find('.resetButton').click(simulator.reset);
-    $node.find('.clearButton').click(simulator.clearMem);
+    // $node.find('.clearButton').click(simulator.clearMem);
     $node.find('.nmiButton').click(simulator.triggerNMI);
     $node.find('.hexdumpButton').click(assembler.hexdump);
     $node.find('.disassembleButton').click(assembler.disassemble);
@@ -98,7 +97,7 @@ function SimulatorWidget(node) {
       run: [true, 'Run'],
       reset: true,
       clear: true,
-      interrupt: false,
+      interrupt: true,
       hexdump: true,
       disassemble: true,
       debug: [true, false]
@@ -140,7 +139,7 @@ function SimulatorWidget(node) {
         $node.find('.runButton').val(state.run[1]);
       }
       $node.find('.resetButton').attr('disabled', !state.reset);
-      $node.find('.clearButton').attr('disabled', !state.clear);
+      // $node.find('.clearButton').attr('disabled', !state.clear);
       $node.find('.nmiButton').attr('disabled', !state.interrupt);
       $node.find('.hexdumpButton').attr('disabled', !state.hexdump);
       $node.find('.disassembleButton').attr('disabled', !state.disassemble);
@@ -613,6 +612,8 @@ function SimulatorWidget(node) {
         stackPush(regP | 0b00110100);
         regP = regP | 0b00100100;
         regPC = addr;
+        // if (regPC === 0)
+        //   codeRunning = false;
         //BRK
       },
       // i20: function () {
@@ -1814,16 +1815,19 @@ function SimulatorWidget(node) {
     }
 
     function clearMem() {
+      for (var i = 0; i < 0x10000; i++) { // clear all memory
+        memory.set(i, 0x00);
+      }
+      $node.find('.messages code').empty();
+      message("Memory cleared.");
       display.reset();
+      assembler.assembleCode();
       regA = regX = regY = 0;
       regPC = memory.getWord(0xfffc);
       regSP = 0xff;
       regP = 0x30;
-      for (var i = 0; i < 0x10000; i++) { // clear all memory
-        memory.set(i, 0x00);
-      }
-      message("Reset to address " + addr2hex(regPC));
-      updateDebugInfo();
+      // message("Reset to address " + addr2hex(regPC));
+      // updateDebugInfo();
     }
 
     function stop() {
@@ -2030,10 +2034,10 @@ function SimulatorWidget(node) {
 
       wasOutOfRangeBranch = false;
   
-      simulator.reset();
+      // simulator.reset();
       labels.reset();
       defaultCodePC = BOOTSTRAP_ADDRESS;
-      $node.find('.messages code').empty();
+      // $node.find('.messages code').empty();
 
       var codeEditor = ace.edit("editor");
       var code = codeEditor.getValue();
@@ -2390,17 +2394,19 @@ function SimulatorWidget(node) {
       }
       
       // Label lo/hi
-      if (param.match(/^#[<>]\w+$/)) {
-        label = param.replace(/^#[<>](\w+)$/, "$1");
-        hilo = param.replace(/^#([<>]).*$/, "$1");
+      // #\w+?(?=_HI|_LO)
+      // /^#\w+?$/
+      if (param.match(/^#\w+?(_HI|_LO)$/i)) {
+        label = param.replace(/^#(\w+?)(_HI|_LO)$/i, "$1");
+        hilo = param.replace(/^#(\w+?)(_HI|_LO)$/i, "$2");
         pushByte(opcode);
         if (labels.find(label)) {
           addr = labels.getPC(label);
-          switch(hilo) {
-          case ">":
+          switch(hilo.toUpperCase()) {
+          case "_HI":
             pushByte((addr >> 8) & 0xff);
             return true;
-          case "<":
+          case "_LO":
             pushByte(addr & 0xff);
             return true;
           default:
