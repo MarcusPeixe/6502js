@@ -48,6 +48,8 @@
           <input type="text" value="15" class="delay" name="delay" />
           <label for="persec">Per Sec: </label>
           <input type="text" value="97" class="persec" name="persec" />
+          <label for="timedirqs">Periodic IRQs: </label>
+          <input type="text" value="0" class="irqclock" name="irqclock" />
         </div>
         <div class="monitor"><pre><code></code></pre></div>
         <div class="messages"><pre><code></code></pre></div>
@@ -56,7 +58,18 @@
 
 Memory location $fe contains a new random byte on every instruction.
 
-Every time a key is pressed, its ASCII code is stored in $ff, and a IRQ is triggered.
+Every time a key is pressed, its ASCII code is stored in $ff, and a IRQ is
+triggered.
+
+-----------------------
+
+If the "Timed IRQs" option is set to a non-zero value, every N milliseconds a
+IRQ is triggered and location $ff is set to 0.
+
+To assign functions as interrupt handlers, name their label as "res", "irq" and
+"nmi" (RESETs, IRQs and Non Maskable Interrupts, respectively).
+
+-----------------------
 
 Memory locations $200 to $5ff map to the screen pixels. Different values will
 draw different colour/character pixels. The pixels are:
@@ -80,6 +93,41 @@ $20 - $7f: ASCII table
 $80 - $bf: Colours (3 bit depth)
 $c0 - $ff: Greyscale 
 
+-----------------------
+
+To extract the low or high byte of a label's address, suffix it with _LO or _HI
+respectively.
+Example:
+
+; CODE START
+
+test_label:
+lda #test_label_LO
+sta $00
+lda #test_label_HI
+sta $01
+
+; CODE END
+
+(Please note it only works with immediate addressing mode)
+
+You can also use the label name without any suffixes in absolute addressing modes.
+
+-----------------------
+
+You can use the keyword "define" to assign names to certain values. These names
+can be used throughout your code.
+
+"dcb value, value, ... value" is used to define constant bytes in memory (its
+best to use a label right before to provide easy access to them)
+
+-----------------------
+
+Number literal notations are either:
+
+123 for decimal
+$1234 for hex
+b10101010 for binary
 
         </div>
       </div>

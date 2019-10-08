@@ -367,6 +367,7 @@ function SimulatorWidget(node) {
     var debug = false;
     var monitoring = false;
     var executeId;
+    var irqClockId;
 
     // IRQ
     function triggerIRQ() {
@@ -1649,7 +1650,17 @@ function SimulatorWidget(node) {
         codeRunning = true;
         var delay = parseInt($node.find('.delay').val(), 10);
         executeId = setInterval(multiExecute, delay);
+        var irqClockDelay = parseInt($node.find('.irqclock').val(), 10);
+        if (irqClockDelay > 0)
+          irqClockId = setInterval(irqClockTick, irqClockDelay);
       }
+    }
+
+    // IRQ and store #00 in ZP $ff
+    function irqClockTick() {
+      memory.storeByte(0xff, 0);
+      simulator.triggerIRQ();
+      //IRQ
     }
 
     function multiExecute() {
@@ -1833,6 +1844,7 @@ function SimulatorWidget(node) {
     function stop() {
       codeRunning = false;
       clearInterval(executeId);
+      clearInterval(irqClockId);
       message("\nStopped\n");
     }
 
