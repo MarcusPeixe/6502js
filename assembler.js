@@ -2206,7 +2206,7 @@ function SimulatorWidget(node) {
       command = command.toUpperCase();
 
       if (input.match(/^\*\s*=\s*\$?[0-9a-f]*$/)) {
-        // equ spotted
+        // "org" spotted
         param = input.replace(/^\s*\*\s*=\s*/, "");
         if (param[0] === "$") {
           param = param.replace(/^\$/, "");
