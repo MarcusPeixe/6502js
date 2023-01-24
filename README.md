@@ -20,3 +20,34 @@ The changes I made to the project were:
 * Added some CSS style and colouring.
 
 - Code window is no longer resizeable.
+
+```
+; Sample assembly code:
+
+res:              ; Program entry point
+  lda #$41
+  ldx #$00
+loop:
+  sta $0200, x
+  eor #$20        ; Fill a quarter of the screen
+  inx             ; with alternating 'A' and 'a'
+  bne loop        ; characters
+  brk
+
+irq:              ; Interrupt service routine
+	nop
+	lda #>irq       ; Loop forever
+	pha
+	lda #<irq
+	pha
+  rts
+
+* = $0700         ; Set Program Counter
+
+dcb 10            ; Define Constant Bytes
+dcb $10
+dcb %00000010
+
+dcb $12, $34
+
+```

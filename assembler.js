@@ -49,7 +49,7 @@ function SimulatorWidget(node) {
     var length = parseInt($node.find('.length').val(), 16);
     var monitorNode = $node.find('.monitor code');
     monitorNode.html(memory.format(start, length));
-    $node.find('.monitoring').change(function () {
+    let a = $node.find('.monitoring').change(function () {
       // ui.toggleMonitor();
       // console.log("hello");
       simulator.toggleMonitor();
@@ -2205,15 +2205,15 @@ function SimulatorWidget(node) {
 
       command = command.toUpperCase();
 
-      if (input.match(/^\*\s*=\s*\$?[0-9a-f]*$/)) {
+      if (input.match(/^\*\s*=\s*[$%]?[0-9A-Fa-f]*$/)) {
         // "org" spotted
         param = input.replace(/^\s*\*\s*=\s*/, "");
         if (param[0] === "$") {
           param = param.replace(/^\$/, "");
           addr = parseInt(param, 16);
         }
-        else if (param[0] === "b") {
-          param = param.replace(/^b/, "");
+        else if (param[0] === "%") {
+          param = param.replace(/^%/, "");
           addr = parseInt(param, 2);
         }
         else {
@@ -2272,8 +2272,8 @@ function SimulatorWidget(node) {
             number = parseInt(str.replace(/^\$/, ""), 16);
             pushByte(number);
           }
-          else if (ch === "b") {
-            number = parseInt(str.replace(/^b/, ""), 2);
+          else if (ch === "%") {
+            number = parseInt(str.replace(/^%/, ""), 2);
             pushByte(number);
           }
           else if (ch >= "0" && ch <= "9") {
@@ -2306,7 +2306,7 @@ function SimulatorWidget(node) {
       }
       else {
         // Binary?
-        var match_data = param.match(/^b([0-1]{1,8})$/i);
+        var match_data = param.match(/^%([0-1]{1,8})$/i);
         if (match_data) {
           value = parseInt(match_data[1], 2);
         }
@@ -2346,7 +2346,7 @@ function SimulatorWidget(node) {
       }
       else {
         // Binary?
-        var match_data = param.match(/^b([0-1]{1,16})$/i);
+        var match_data = param.match(/^%([0-1]{1,16})$/i);
         if (match_data) {
           value = parseInt(match_data[1], 2);
         }
@@ -2395,7 +2395,7 @@ function SimulatorWidget(node) {
       var value, label, hilo, addr;
       if (opcode === null) { return false; }
       
-      var match_data = param.match(/^#([\w\$]+)$/i);
+      var match_data = param.match(/^#([\w\$%]+)$/i);
       if (match_data) {
         var operand = tryParseByteOperand(match_data[1], symbols);
         if (operand >= 0) {
@@ -2408,17 +2408,17 @@ function SimulatorWidget(node) {
       // Label lo/hi
       // #\w+?(?=_HI|_LO)
       // /^#\w+?$/
-      if (param.match(/^#\w+?(_HI|_LO)$/i)) {
-        label = param.replace(/^#(\w+?)(_HI|_LO)$/i, "$1");
-        hilo = param.replace(/^#(\w+?)(_HI|_LO)$/i, "$2");
+      if (param.match(/^#[<>]\w+?$/mg)) {
+        hilo = param.replace(/^#([<>])(\w+?)$/i, "$1");
+        label = param.replace(/^#([<>])(\w+?)$/i, "$2");
         pushByte(opcode);
         if (labels.find(label)) {
           addr = labels.getPC(label);
           switch(hilo.toUpperCase()) {
-          case "_HI":
+          case ">":
             pushByte((addr >> 8) & 0xff);
             return true;
-          case "_LO":
+          case "<":
             pushByte(addr & 0xff);
             return true;
           default:
@@ -2438,7 +2438,7 @@ function SimulatorWidget(node) {
       var value;
       if (opcode === null) { return false; }
       
-      var match_data = param.match(/^\(([\w\$]+)\)$/i);
+      var match_data = param.match(/^\(([\w\$%]+)\)$/i);
       if (match_data) {
         var operand = tryParseWordOperand(match_data[1], symbols);
         if (operand >= 0) {
@@ -2455,7 +2455,7 @@ function SimulatorWidget(node) {
       var value;
       if (opcode === null) { return false; }
       
-      var match_data = param.match(/^\(([\w\$]+),X\)$/i);
+      var match_data = param.match(/^\(([\w\$%]+),X\)$/i);
       if (match_data) {
         var operand = tryParseByteOperand(match_data[1], symbols);
         if (operand >= 0) {
@@ -2472,7 +2472,7 @@ function SimulatorWidget(node) {
       var value;
       if (opcode === null) { return false; }
       
-      var match_data = param.match(/^\(([\w\$]+)\),Y$/i);
+      var match_data = param.match(/^\(([\w\$%]+)\),Y$/i);
       if (match_data) {
         var operand = tryParseByteOperand(match_data[1], symbols);
         if (operand >= 0) {
@@ -2513,7 +2513,7 @@ function SimulatorWidget(node) {
       var number, value, addr;
       if (opcode === null) { return false; }
       
-      var match_data = param.match(/^([\w\$]+),X$/i);
+      var match_data = param.match(/^([\w\$%]+),X$/i);
       if (match_data) {
         var operand = tryParseWordOperand(match_data[1], symbols);
         if (operand >= 0) {
@@ -2546,7 +2546,7 @@ function SimulatorWidget(node) {
       var number, value, addr;
       if (opcode === null) { return false; }
       
-      var match_data = param.match(/^([\w\$]+),Y$/i);
+      var match_data = param.match(/^([\w\$%]+),Y$/i);
       if (match_data) {
         var operand = tryParseWordOperand(match_data[1], symbols);
         if (operand >= 0) {
@@ -2578,7 +2578,7 @@ function SimulatorWidget(node) {
       var number, value;
       if (opcode === null) { return false; }
       
-      var match_data = param.match(/^([\w\$]+),X$/i);
+      var match_data = param.match(/^([\w\$%]+),X$/i);
       if (match_data) {
         var operand = tryParseByteOperand(match_data[1], symbols);
         if (operand >= 0) {
@@ -2596,7 +2596,7 @@ function SimulatorWidget(node) {
       var number, value;
       if (opcode === null) { return false; }
       
-      var match_data = param.match(/^([\w\$]+),Y$/i);
+      var match_data = param.match(/^([\w\$%]+),Y$/i);
       if (match_data) {
         var operand = tryParseByteOperand(match_data[1], symbols);
         if (operand >= 0) {
@@ -2614,7 +2614,7 @@ function SimulatorWidget(node) {
       var value, number, addr;
       if (opcode === null) { return false; }
 
-      var match_data = param.match(/^([\w\$]+)$/i);
+      var match_data = param.match(/^([\w\$%]+)$/i);
       if (match_data) {
         var operand = tryParseWordOperand(match_data[1], symbols);
         if (operand >= 0) {

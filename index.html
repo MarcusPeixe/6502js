@@ -71,17 +71,22 @@ To assign functions as interrupt handlers, name their label as "res", "irq" and
 
 -----------------------
 
-Memory locations $200 to $5ff map to the screen pixels. Different values will
+To start generating new code at a specific address in memory, you can use the
+syntax "* = $xxxx", where $xxxx is that address.
+
+-----------------------
+
+Memory locations $0200 to $05ff map to the screen pixels. Different values will
 draw different colour/character pixels. The pixels are:
 
-$0: Black
-$1: Red
-$2: Green
-$3: Yellow
-$4: Blue
-$5: Purple
-$6: Cyan
-$7: White
+$00: Black
+$01: Red
+$02: Green
+$03: Yellow
+$04: Blue
+$05: Purple
+$06: Cyan
+$07: White
 
 $00 - $07: Dark colours
 $08 - $0f: Saturated colours
@@ -90,21 +95,21 @@ $18 - $1f: Bright and saturated colours
 
 $20 - $7f: ASCII table
 
-$80 - $bf: Colours (3 bit depth)
+$80 - $bf: Colours (each channel has 2 bit depth)
 $c0 - $ff: Greyscale 
 
 -----------------------
 
-To extract the low or high byte of a label's address, suffix it with _LO or _HI
+To extract the low or high byte of a label's address, suffix it with &lt; or &gt;
 respectively.
 Example:
 
 ; CODE START
 
 test_label:
-lda #test_label_LO
+lda #&lt;test_label
 sta $00
-lda #test_label_HI
+lda #&gt;test_label
 sta $01
 
 ; CODE END
@@ -127,7 +132,7 @@ Number literal notations are either:
 
 123 for decimal
 $1234 for hex
-b10101010 for binary
+%10101010 for binary
 
         </div>
       </div>
